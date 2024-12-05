@@ -24,14 +24,40 @@ def clean_data_for_json(obj):
 
 def load_data():
     try:
-        file_path = os.path.join(os.path.dirname(__file__),
-                                 "Australian Shark-Incident Database Public Version.xlsx")
+        file_path = os.path.join(os.path.dirname(__file__), "Australian Shark-Incident Database Public Version.xlsx")
         if os.path.exists(file_path):
+            # Columns to keep
+            columns_to_keep = [
+                'Incident.year', 'Incident.month', 'Victim.injury', 'State', 'Location',
+                'Latitude', 'Longitude', 'Site.category', 'Shark.common.name',
+                'Victim.activity'
+            ]
+            # Load data and keep selected columns
             df = pd.read_excel(file_path)
-            # Clean numerical values
+            df = df[columns_to_keep]
+
+            # Drop rows with missing Latitude and Longitude
+            df = df.dropna(subset=['Latitude', 'Longitude'])
+
+            # Convert Latitude and Longitude to numeric values
             df['Latitude'] = pd.to_numeric(df['Latitude'], errors='coerce')
             df['Longitude'] = pd.to_numeric(df['Longitude'], errors='coerce')
+
+            # Drop rows with invalid coordinates
+            df = df.dropna(subset=['Latitude', 'Longitude'])
+
+            # Create a datetime column for filtering
+            df['Incident.date'] = pd.to_datetime(
+                df['Incident.year'].astype(str) + '-' + df['Incident.month'].astype(str),
+                errors='coerce'
+            )
+            df = df.dropna(subset=['Incident.date'])
+
+            # Fill remaining NaN values with 'Unknown'
+            df = df.fillna('Unknown')
+
             return df
+
         return None
     except Exception as e:
         print(f"Error loading data: {str(e)}")
