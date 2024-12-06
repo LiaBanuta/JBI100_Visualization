@@ -1,85 +1,103 @@
 import React from 'react';
 
-const Sidebar = ({
-  view,
-  setView,
-  selectedYear,
-  setSelectedYear,
-  selectedState,
-  setSelectedState
-}) => {
-  const yearOptions = ['all', '2018', '2019', '2020', '2021', '2022'];
-  const stateOptions = ['all', 'NSW', 'QLD', 'WA', 'VIC', 'SA'];
+const Sidebar = ({ view, setView, selectedYear, setSelectedYear, selectedState, setSelectedState, data }) => {
+  const calculateStats = () => {
+    if (!data?.incidents) return null;
+    const total = data.incidents.length;
+    const activities = data.incidents.reduce((acc, incident) => {
+      const activity = incident['Victim.activity']?.toLowerCase() || '';
+      if (activity.includes('swim')) acc.swimming++;
+      if (activity.includes('surf')) acc.surfing++;
+      if (activity.includes('div')) acc.diving++;
+      if (activity.includes('fish')) acc.fishing++;
+      return acc;
+    }, { swimming: 0, surfing: 0, diving: 0, fishing: 0 });
+
+    return Object.entries(activities).map(([key, value]) => ({
+      activity: key,
+      percentage: (value / total) * 100
+    }));
+  };
+
+  const getFilteredYears = () => {
+    if (!data?.yearly) return [];
+    return Object.keys(data.yearly)
+      .map(Number)
+      .filter(year => year % 8 === 0)
+      .sort((a, b) => b - a);
+  };
+
+  const stats = calculateStats() || [];
+  const activityColors = {
+    swimming: '#60a5fa',
+    surfing: '#f87171',
+    diving: '#4ade80',
+    fishing: '#fbbf24'
+  };
 
   return (
-    <aside className="sidebar">
-      <h1 className="text-2xl font-bold mb-8">Shark Incidents</h1>
+    <div className="sidebar">
+      <h1 className="text-2xl font-bold text-white mb-8">Shark Incidents</h1>
 
-      {/* Navigation Buttons */}
-      <div className="space-y-2 mb-8">
-        <button
-          onClick={() => setView('map')}
-          className={`nav-button ${view === 'map' ? 'active' : ''}`}
-        >
-          Map View
-        </button>
-        <button
-          onClick={() => setView('trends')}
-          className={`nav-button ${view === 'trends' ? 'active' : ''}`}
-        >
-          Trends
-        </button>
-        <button
-          onClick={() => setView('activities')}
-          className={`nav-button ${view === 'activities' ? 'active' : ''}`}
-        >
-          Activities
-        </button>
-        <button
-          onClick={() => setView('states')}
-          className={`nav-button ${view === 'states' ? 'active' : ''}`}
-        >
-          State Distribution
-        </button>
+      <nav className="mb-8">
+        {['Map', 'Trends', 'Activities', 'State Distribution'].map(item => (
+          <button
+            key={item}
+            onClick={() => setView(item.toLowerCase())}
+            className={`nav-button ${view === item.toLowerCase() ? 'active' : ''}`}
+          >
+            {item}
+          </button>
+        ))}
+      </nav>
+
+      <div className="mb-8">
+        <h2 className="text-xl text-white mb-4">Risk Levels</h2>
+        {stats.map(({ activity, percentage }) => (
+          <div key={activity} className="mb-1">
+            <span
+              className="text-sm"
+              style={{ color: activityColors[activity] }}
+            >
+              {activity}:
+            </span>
+            <span className="text-sm ml-1" style={{ color: activityColors[activity] }}>
+              {percentage.toFixed(1)}%
+            </span>
+          </div>
+        ))}
       </div>
 
-      {/* Filters */}
-      <div className="space-y-4">
+      <div className="space-y-2">
         <div>
-          <label className="block text-sm text-gray-400 mb-2">
-            Select Year
-          </label>
+          <div className="text-sm">Year</div>
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
-            className="w-full bg-gray-700 text-white rounded p-2 border border-gray-600"
+            className="bg-white text-black px-3 py-1 w-32 rounded cursor-pointer outline-none"
           >
-            {yearOptions.map(year => (
-              <option key={year} value={year}>
-                {year === 'all' ? 'All Years' : year}
-              </option>
+            <option value="all">All Years</option>
+            {getFilteredYears().map(year => (
+              <option key={year} value={year}>{year}</option>
             ))}
           </select>
         </div>
 
         <div>
-          <label className="block text-sm text-gray-400 mb-2">
-            Select State
-          </label>
+          <div className="text-sm">State</div>
           <select
             value={selectedState}
             onChange={(e) => setSelectedState(e.target.value)}
-            className="w-full bg-gray-700 text-white rounded p-2 border border-gray-600"
+            className="bg-white text-black px-3 py-1 w-32 rounded cursor-pointer outline-none"
           >
-            {stateOptions.map(state => (
-              <option key={state} value={state}>
-                {state === 'all' ? 'All States' : state}
-              </option>
+            <option value="all">All States</option>
+            {data?.states && Object.keys(data.states).sort().map(state => (
+              <option key={state} value={state}>{state}</option>
             ))}
           </select>
         </div>
       </div>
-    </aside>
+    </div>
   );
 };
 

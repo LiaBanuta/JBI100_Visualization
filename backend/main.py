@@ -31,6 +31,11 @@ def load_data():
             # Clean numerical values
             df['Latitude'] = pd.to_numeric(df['Latitude'], errors='coerce')
             df['Longitude'] = pd.to_numeric(df['Longitude'], errors='coerce')
+
+            # Ensure the shark name column is correctly handled
+            if 'shark.common.name' in df.columns:
+                df = df.rename(columns={'shark.common.name': 'Shark.common.name'})
+
             return df
         return None
     except Exception as e:
@@ -65,7 +70,6 @@ def get_data():
                 'activities': activities
             }
         else:
-            # Sample data if no real data available
             data = {
                 'incidents': [{
                     'Incident.year': 2020,
@@ -73,7 +77,9 @@ def get_data():
                     'Location': 'Byron Bay',
                     'Latitude': -28.6474,
                     'Longitude': 153.6020,
-                    'Victim.activity': 'Surfing'
+                    'Victim.activity': 'Surfing',
+                    'Shark.common.name': 'White shark',
+                    'Victim.injury': 'Minor'
                 }],
                 'yearly': {
                     '2018': 15,

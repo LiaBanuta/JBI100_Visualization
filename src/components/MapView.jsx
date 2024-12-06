@@ -65,6 +65,11 @@ const MapView = ({ data, selectedYear, selectedState }) => {
               <p style="margin: 4px 0; color: #e5e7eb;">
                 <strong>State:</strong> ${incident.State}
               </p>
+              ${incident['Shark.common.name'] ? 
+                `<p style="margin: 4px 0; color: #e5e7eb;">
+                  <strong>Shark:</strong> ${incident['Shark.common.name']}
+                </p>` : ''
+              }
               ${incident['Victim.injury'] ? 
                 `<p style="margin: 4px 0; color: #e5e7eb;">
                   <strong>Injury:</strong> ${incident['Victim.injury']}

@@ -21,7 +21,9 @@ const Dashboard = () => {
         'Location': 'Byron Bay',
         'Latitude': -28.6474,
         'Longitude': 153.6020,
-        'Victim.activity': 'Surfing'
+        'Victim.activity': 'Surfing',
+        'Shark.species': 'Great White Shark',
+        'Victim.injury': 'Minor'
       }
     ],
     yearly: {
